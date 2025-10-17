@@ -537,6 +537,21 @@ public function markPaymentPaid($payment_id) {
     return $stmt->execute();
 }
 
+ /* ========== APARTMENT PICTURES ========== */
+    public function getApartmentPictures($apartmentId) {
+        $stmt = $this->connect()->prepare("SELECT * FROM ApartmentPictures WHERE ApartmentID = :id AND Status='active'");
+        $stmt->bindParam(':id', $apartmentId);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addApartmentPicture($apartmentId, $filePath) {
+        $stmt = $this->connect()->prepare("INSERT INTO ApartmentPictures (ApartmentID, PicPath, Status) VALUES (:id, :path, 'active')");
+        $stmt->bindParam(':id', $apartmentId);
+        $stmt->bindParam(':path', $filePath);
+        return $stmt->execute();
+    }
+
 
 
 public function logout() {
