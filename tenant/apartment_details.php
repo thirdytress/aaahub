@@ -37,6 +37,14 @@ $images = $pictures->fetchAll(PDO::FETCH_ASSOC);
   <title><?= htmlspecialchars($apartment['Name']) ?> | Apartment Details</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
+<?php if (!empty($_SESSION['message'])): ?>
+<div class="alert alert-success">
+    <?= $_SESSION['message'] ?>
+</div>
+<?php unset($_SESSION['message']); endif; ?>
+
+
 <body class="bg-light">
 <div class="container py-4">
 
@@ -97,7 +105,8 @@ $images = $pictures->fetchAll(PDO::FETCH_ASSOC);
     <p><strong>Monthly Rate:</strong> ₱<?= number_format($apartment['MonthlyRate'], 2) ?></p>
 
     <a href="apply.php?apartment_id=<?= $apartment['ApartmentID'] ?>" 
-       class="btn btn-success w-100 mt-3">Apply for this Apartment</a>
+   class="btn btn-success w-100 mt-3">Apply for this Apartment</a>
+
   </div>
 
 </div>

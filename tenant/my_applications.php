@@ -37,15 +37,11 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
       box-sizing: border-box;
     }
 
-    html, body {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
     body {
       background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 50%, #f5f1e8 100%);
       font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      position: relative;
       overflow-x: hidden;
     }
 
@@ -113,8 +109,23 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
       transform: translateY(-2px);
     }
 
+    .navbar .btn-outline-danger {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      border: 2px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+
+    .navbar .btn-outline-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
+    }
+
     .container {
-      flex: 1; /* pushes footer to bottom */
       position: relative;
       z-index: 1;
       margin-top: 50px;
@@ -123,7 +134,9 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
     .card {
       border: none;
       border-radius: 30px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+      box-shadow: 
+        0 30px 80px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.6);
       background: linear-gradient(145deg, #ffffff 0%, #f8f5f0 100%);
       border: 2px solid rgba(212, 175, 55, 0.3);
       position: relative;
@@ -131,8 +144,14 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
     }
 
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(50px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .card::before {
@@ -164,18 +183,23 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
       box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
 
+    .table {
+      margin-bottom: 0;
+    }
+
     .table thead {
       background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
     }
 
     .table thead th {
-    color: #f8f5f0 !important;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    font-weight: 700;
-    letter-spacing: 1px;
-    background: none !important;
-    border-bottom: 2px solid var(--accent-gold);
-  }
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1.2rem 1rem;
+      border: none;
+      font-size: 0.9rem;
+    }
 
     .table tbody tr {
       transition: all 0.3s ease;
@@ -261,21 +285,27 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
       50% { transform: translateY(-30px); }
     }
 
-    footer {
-      background: linear-gradient(135deg, var(--deep-navy) 0%, var(--primary-dark) 100%);
-      color: white;
-      padding: 30px 20px;
-      text-align: center;
-      border-top: 3px solid var(--accent-gold);
-      margin-top: auto;
-    }
-
     @media (max-width: 768px) {
-      .card { padding: 2rem !important; }
-      .card h3 { font-size: 1.5rem; }
-      .table thead th, .table tbody td { padding: 1rem 0.5rem; font-size: 0.85rem; }
-      .status { padding: 6px 15px; font-size: 0.8rem; }
+      .card {
+        padding: 2rem !important;
+      }
+
+      .card h3 {
+        font-size: 1.5rem;
+      }
+
+      .table thead th,
+      .table tbody td {
+        padding: 1rem 0.5rem;
+        font-size: 0.85rem;
+      }
+
+      .status {
+        padding: 6px 15px;
+        font-size: 0.8rem;
+      }
     }
+    
   </style>
 </head>
 <body>
@@ -287,9 +317,8 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
   <div class="container">
     <a class="navbar-brand fw-bold" href="#">ApartmentHub Tenant</a>
     <div class="d-flex">
-      <a href="dashboard.php" class="btn btn-outline-secondary btn-sm me-2">
-        <i class="bi bi-arrow-left"></i> Back
-      </a>
+      <a href="dashboard.php" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-arrow-left"></i> Back</a>
+        
     </div>
   </div>
 </nav>
@@ -298,55 +327,47 @@ $applications = $db->getTenantApplications($_SESSION['user_id']);
   <div class="card p-4">
     <h3><i class="bi bi-file-earmark-text me-2"></i>My Applications</h3>
 
+    <!-- Sample Data -->
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-light">
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Apartment</th>
+        <th>Status</th>
+        <th>Date Applied</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (!empty($applications)): ?>
+        <?php foreach ($applications as $index => $app): ?>
           <tr>
-            <th>#</th>
-            <th>Apartment</th>
-            <th>Status</th>
-            <th>Date Applied</th>
+            <td><?= $index + 1 ?></td>
+            <td><?= htmlspecialchars($app['apartment_name']) ?></td>
+            <td>
+              <?php 
+                $status = strtolower($app['status']);
+                echo '<span class="status ' . $status . '">' . ucfirst($status) . '</span>'; 
+              ?>
+            </td>
+            <td><?= htmlspecialchars($app['date_applied']) ?></td>
           </tr>
-        </thead>
-        <tbody>
-          <?php if (!empty($applications)): ?>
-            <?php foreach ($applications as $index => $app): ?>
-              <tr>
-                <td><?= $index + 1 ?></td>
-                <td><?= htmlspecialchars($app['apartment_name']) ?></td>
-                <td>
-                  <?php 
-                    $status = strtolower($app['status']);
-                    echo '<span class="status ' . $status . '">' . ucfirst($status) . '</span>'; 
-                  ?>
-                </td>
-                <td><?= htmlspecialchars($app['date_applied']) ?></td>
-              </tr>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <tr>
-              <td colspan="4" class="text-muted text-center">
-                You haven't submitted any applications yet.
-              </td>
-            </tr>
-          <?php endif; ?>
-        </tbody>
-      </table>
-    </div>
-  </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <tr>
+          <td colspan="4" class="text-muted text-center">You haven't submitted any applications yet.</td>
+        </tr>
+      <?php endif; ?>
+    </tbody>
+  </table>
 </div>
 
-<footer>
-  <p class="mb-1">&copy; 2025 ApartmentHub. All rights reserved.</p>
-  <p class="mb-0">
-    <strong>Contact:</strong> 
-    <a href="tel:+639123456789" class="text-decoration-none text-white">0993962687</a> | 
-    <strong>Email:</strong> 
-    <a href="mailto:support@apartmenthub.com" class="text-decoration-none text-white">martynjosephseloterio@gmail.com</a>
-  </p>
-</footer>
+
+    <!-- Uncomment this for empty state -->
+    <!-- <p class="text-muted">You haven't submitted any applications yet.</p> -->
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

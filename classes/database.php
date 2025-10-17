@@ -74,13 +74,7 @@ class Database {
 
 
     // Approve / Reject applications
-    public function approveApplication($application_id) {
-        return $this->updateApplicationStatus($application_id, 'Approved');
-    }
-
-    public function rejectApplication($application_id) {
-        return $this->updateApplicationStatus($application_id, 'Rejected');
-    }
+    
 
     // ===========================
     // Tenant Functions
@@ -224,19 +218,7 @@ class Database {
         return $stmt->execute() ? true : "Failed to submit application.";
     }
 
-    public function getAllApplications() {
-        $stmt = $this->connect()->prepare("
-            SELECT a.application_id, a.status as app_status, a.date_applied, 
-                   t.firstname, t.lastname, t.username as tenant_username,
-                   p.Name as apartment_name, p.Location, a.tenant_id, a.apartment_id
-            FROM applications a
-            JOIN tenants t ON a.tenant_id = t.tenant_id
-            JOIN apartments p ON a.apartment_id = p.ApartmentID
-            ORDER BY a.date_applied DESC
-        ");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+
 
     public function getTenantApplications($tenant_id) {
         $stmt = $this->connect()->prepare("
@@ -251,12 +233,7 @@ class Database {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function updateApplicationStatus($application_id, $status) {
-        $stmt = $this->connect()->prepare("UPDATE applications SET status = :status WHERE application_id = :id");
-        $stmt->bindParam(':status', $status);
-        $stmt->bindParam(':id', $application_id);
-        return $stmt->execute();
-    }
+    
 
     public function countApplications() {
         $stmt = $this->connect()->query("SELECT COUNT(*) as cnt FROM applications");
@@ -294,20 +271,7 @@ class Database {
 }
 
 
-    public function createLease($tenant_id, $apartment_id, $duration_months = 12) {
-        $start_date = date('Y-m-d');
-        $end_date = date('Y-m-d', strtotime("+$duration_months months"));
-
-        $stmt = $this->connect()->prepare("
-            INSERT INTO leases (tenant_id, apartment_id, start_date, end_date)
-            VALUES (:tenant, :apartment, :start, :end)
-        ");
-        $stmt->bindParam(':tenant', $tenant_id);
-        $stmt->bindParam(':apartment', $apartment_id);
-        $stmt->bindParam(':start', $start_date);
-        $stmt->bindParam(':end', $end_date);
-        return $stmt->execute();
-    }
+    
 
     public function countLeases() {
         $stmt = $this->connect()->query("SELECT COUNT(*) as cnt FROM leases");
@@ -551,6 +515,99 @@ public function markPaymentPaid($payment_id) {
         $stmt->bindParam(':path', $filePath);
         return $stmt->execute();
     }
+
+        public function approveApplication($application_id) {
+    $conn = $this->connect();
+
+    try {
+        // Update application status
+        $stmt1 = $conn->prepare("UPDATE applications SET status='Approved' WHERE application_id=:id");
+        $stmt1->execute([':id' => $application_id]);
+
+        // Get tenant & apartment
+        $stmt2 = $conn->prepare("SELECT tenant_id, apartment_id FROM applications WHERE application_id=:id");
+        $stmt2->execute([':id' => $application_id]);
+        $app = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+        if ($app) {
+            $tenant_id = $app['tenant_id'];
+            $apartment_id = $app['apartment_id'];
+
+            if (!$this->leaseExists($tenant_id, $apartment_id)) {
+                $start = date('Y-m-d');
+                $end = date('Y-m-d', strtotime('+1 year'));
+                $this->createLease($tenant_id, $apartment_id, $start, $end);
+            }
+        }
+
+        return true;
+    } catch (PDOException $e) {
+        return "Error approving application: " . $e->getMessage();
+    }
+}
+
+
+    // Reject application
+    public function rejectApplication($application_id) {
+    $stmt = $this->connect()->prepare("UPDATE applications SET status='Rejected' WHERE application_id=:id");
+    $stmt->execute([':id'=>$application_id]);
+}
+
+// Get application by ID
+public function getApplicationById($id) {
+    $stmt = $this->connect()->prepare("SELECT * FROM applications WHERE application_id=:id");
+    $stmt->execute([':id'=>$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+    // Check if a lease already exists
+
+
+    // Create a new lease
+    public function leaseExists($tenant_id, $apartment_id) {
+    $stmt = $this->connect()->prepare("
+        SELECT COUNT(*) FROM leases 
+        WHERE tenant_id = :tenant AND apartment_id = :apartment AND status='Active'
+    ");
+    $stmt->execute([':tenant'=>$tenant_id, ':apartment'=>$apartment_id]);
+    return $stmt->fetchColumn() > 0;
+}
+
+public function createLease($tenant_id, $apartment_id, $start_date, $end_date) {
+    $stmt = $this->connect()->prepare("
+        INSERT INTO leases (tenant_id, apartment_id, start_date, end_date, status)
+        VALUES (:tid, :aid, :start, :end, 'Active')
+    ");
+    $stmt->bindParam(':tid', $tenant_id);
+    $stmt->bindParam(':aid', $apartment_id);
+    $stmt->bindParam(':start', $start_date);
+    $stmt->bindParam(':end', $end_date);
+    return $stmt->execute();
+}
+
+    // Update application status
+    public function updateApplicationStatus($application_id, $status) {
+    $stmt = $this->connect()->prepare("UPDATE applications SET status = :status WHERE application_id = :id");
+    return $stmt->execute([':status' => $status, ':id' => $application_id]);
+}
+
+
+
+    // Get all applications with tenant and apartment info
+    public function getAllApplications() {
+    $stmt = $this->connect()->prepare("
+        SELECT a.*, t.firstname, t.lastname, t.username AS tenant_username, 
+               p.Name AS apartment_name, p.Location
+        FROM applications a
+        JOIN tenants t ON a.tenant_id = t.tenant_id
+        JOIN apartments p ON a.apartment_id = p.ApartmentID
+        ORDER BY a.date_applied DESC
+    ");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
 
 
 

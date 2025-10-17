@@ -11,11 +11,33 @@ $db = new Database();
 
 // Approve / Reject logic
 if (isset($_GET['approve'])) {
-    $db->updateApplicationStatus($_GET['approve'], 'Approved');
+    $app_id = $_GET['approve'];
+
+    // Update application status
+    $updated = $db->updateApplicationStatus($app_id, 'Approved');
+
+    // Get application details
+    $app = $db->getApplicationById($app_id);
+    if ($app && isset($app['tenant_id'], $app['apartment_id'])) {
+        $tenant_id = $app['tenant_id'];
+        $apartment_id = $app['apartment_id'];
+
+        // Check if lease already exists
+        if (!$db->leaseExists($tenant_id, $apartment_id)) {
+            $db->createLease(
+                $tenant_id, 
+                $apartment_id, 
+                date('Y-m-d'), 
+                date('Y-m-d', strtotime('+1 year'))
+            );
+        }
+    }
 }
+
 if (isset($_GET['reject'])) {
     $db->updateApplicationStatus($_GET['reject'], 'Rejected');
 }
+
 
 $applications = $db->getAllApplications();
 ?>

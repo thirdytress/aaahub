@@ -10,8 +10,20 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'tenant') {
 $db = new Database();
 $tenant_id = $_SESSION['user_id'];
 
-// 🔹 Use centralized function
-$leases = $db->getTenantLeases($tenant_id);
+$conn = $db->connect();
+
+// Fetch only approved applications that become leases
+$stmt = $conn->prepare("
+    SELECT l.lease_id, ap.Name AS apartment_name, ap.Location, ap.MonthlyRate,
+           l.start_date, l.end_date
+    FROM leases l
+    JOIN apartments ap ON l.apartment_id = ap.ApartmentID
+    JOIN applications a ON a.tenant_id = l.tenant_id AND a.apartment_id = l.apartment_id
+    WHERE l.tenant_id = :tenant
+    ORDER BY l.start_date DESC
+");
+$stmt->execute(['tenant' => $tenant_id]);
+$leases = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -287,41 +299,39 @@ $leases = $db->getTenantLeases($tenant_id);
   </div>
 </nav>
 
-<div class="container">
-  <div class="card">
-    <h3 class="text-primary mb-4"><i class="bi bi-house-door me-2"></i>My Leases</h3>
+<div class="container mt-4">
+  <h3>My Leases</h3>
 
-    <?php if (count($leases) > 0): ?>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead class="table-light">
+  <?php if (!empty($leases)): ?>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Apartment</th>
+            <th>Location</th>
+            <th>Monthly Rate</th>
+            <th>Lease Start</th>
+            <th>Lease End</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($leases as $i => $lease): ?>
             <tr>
-              <th>#</th>
-              <th>Apartment</th>
-              <th>Location</th>
-              <th>Monthly Rate</th>
-              <th>Lease Start</th>
-              <th>Lease End</th>
+              <td><?= $i + 1 ?></td>
+              <td><?= htmlspecialchars($lease['apartment_name']) ?></td>
+              <td><?= htmlspecialchars($lease['Location']) ?></td>
+              <td>₱<?= number_format($lease['MonthlyRate'], 2) ?></td>
+              <td><?= date('M d, Y', strtotime($lease['start_date'])) ?></td>
+              <td><?= date('M d, Y', strtotime($lease['end_date'])) ?></td>
             </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($leases as $index => $lease): ?>
-              <tr>
-                <td><?= $index + 1 ?></td>
-                <td><?= htmlspecialchars($lease['apartment_name']) ?></td>
-                <td><?= htmlspecialchars($lease['Location']) ?></td>
-                <td>₱<?= number_format($lease['MonthlyRate'], 2) ?></td>
-                <td><?= date('M d, Y', strtotime($lease['start_date'])) ?></td>
-                <td><?= date('M d, Y', strtotime($lease['end_date'])) ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    <?php else: ?>
-      <p class="text-muted">You currently have no active leases.</p>
-    <?php endif; ?>
-  </div>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  <?php else: ?>
+    <p class="text-muted">You currently have no active leases.</p>
+  <?php endif; ?>
 </div>
 
 <footer>
