@@ -16,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = trim($_POST['description']);
     $monthly_rate = trim($_POST['monthly_rate']);
 
-    // Step 1: Add main apartment record
+    // Step 1: Insert apartment (temporary Image = NULL)
     $stmt = $db->connect()->prepare("
-        INSERT INTO apartments (name, type, location, description, monthly_rate)
-        VALUES (:n, :t, :l, :d, :r)
+        INSERT INTO apartments (Name, Type, Location, Description, MonthlyRate, Image, Status)
+        VALUES (:n, :t, :l, :d, :r, NULL, 'Available')
     ");
     $stmt->bindParam(':n', $name);
     $stmt->bindParam(':t', $type);
@@ -30,16 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $apartment_id = $db->connect()->lastInsertId();
 
-    // Step 2: Handle multiple image uploads
+    // Step 2: Upload directory
     $upload_dir = "../uploads/apartments/";
     if (!file_exists($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
 
+    $firstImage = null;
+
+    // Step 3: Handle multiple images
     foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
         if ($_FILES['images']['error'][$key] == 0) {
             $ext = pathinfo($_FILES['images']['name'][$key], PATHINFO_EXTENSION);
-            $file_path = 'uploads/apartments/' . uniqid() . '.' . $ext;
+            $file_path = 'uploads/apartments/' . uniqid('apt_') . '.' . $ext;
             move_uploaded_file($tmp_name, '../' . $file_path);
 
             // Save each image path
@@ -50,18 +53,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $insertPic->bindParam(':aid', $apartment_id);
             $insertPic->bindParam(':path', $file_path);
             $insertPic->execute();
+
+            // Set first image as main thumbnail
+            if ($firstImage === null) {
+                $firstImage = $file_path;
+            }
         }
     }
 
-    echo "<script>alert('Apartment and pictures added successfully!'); window.location.href='dashboard.php';</script>";
+    // Step 4: Update main Image column in apartments table
+    if ($firstImage) {
+        $updateMain = $db->connect()->prepare("UPDATE apartments SET Image = :img WHERE ApartmentID = :id");
+        $updateMain->bindParam(':img', $firstImage);
+        $updateMain->bindParam(':id', $apartment_id);
+        $updateMain->execute();
+    }
+
+    echo "<script>alert('Apartment added successfully with multiple images!'); window.location.href='dashboard.php';</script>";
 }
 ?>
 
-
-
-
-
-<!-- HTML Form -->
+<!-- HTML FORM -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,9 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="number" step="0.01" name="monthly_rate" class="form-control" required>
                 </div>
                 <div class="mb-3">
-  <label>Upload Apartment Images</label>
-  <input type="file" name="images[]" class="form-control" accept="image/*" multiple required>
-</div>
+                    <label>Upload Apartment Images</label>
+                    <input type="file" name="images[]" class="form-control" accept="image/*" multiple required>
+                </div>
 
                 <button type="submit" class="btn btn-success w-100">Add Apartment</button>
                 <a href="dashboard.php" class="btn btn-secondary w-100 mt-2">Cancel</a>

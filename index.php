@@ -176,49 +176,54 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- APARTMENTS -->
 <section class="container mt-5">
-  <h2 class="mb-4 text-primary fw-bold">Available Apartments</h2>
+  <h2 class="mb-4 text-primary fw-bold text-center">Available Apartments</h2>
   <div id="message-area"></div>
-  <div class="apartment-grid">
 
+  <div class="row g-4 justify-content-center"> <!-- ✅ Bootstrap grid start -->
     <?php if ($apartments): ?>
       <?php foreach ($apartments as $apt): ?>
-        <div class="col-md-4 mb-4">
-          <div class="card apartment-card clickable-card"
+        <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+          <div class="card apartment-card clickable-card shadow-sm border-0 rounded-4"
+               style="width: 100%; max-width: 330px;"
                data-bs-toggle="modal"
                data-bs-target="#apartmentModal"
                data-name="<?= htmlspecialchars($apt['Name']) ?>"
                data-description="<?= htmlspecialchars($apt['Description']) ?>"
-               data-rate="<?= number_format($apt['MonthlyRate'],2) ?>"
+               data-rate="<?= number_format($apt['MonthlyRate'], 2) ?>"
                data-image="<?= htmlspecialchars($apt['Image'] ?: 'images/airbnb1.jpg') ?>">
 
-            <img src="<?= htmlspecialchars($apt['Image'] ?: 'images/airbnb1.jpg') ?>" alt="<?= htmlspecialchars($apt['Name']) ?>">
+            <img src="<?= htmlspecialchars($apt['Image'] ?: 'images/airbnb1.jpg') ?>"
+                 alt="<?= htmlspecialchars($apt['Name']) ?>"
+                 class="card-img-top rounded-top-4"
+                 style="height: 220px; object-fit: cover;">
 
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><?= htmlspecialchars($apt['Name']) ?></h5>
-              <p class="card-text"><?= htmlspecialchars($apt['Description']) ?></p>
-              <p class="card-text"><strong>Monthly Rate:</strong> ₱<?= number_format($apt['MonthlyRate'], 2) ?></p>
+            <div class="card-body text-center d-flex flex-column">
+              <h5 class="fw-bold"><?= htmlspecialchars($apt['Name']) ?></h5>
+              <p class="text-muted mb-2"><?= htmlspecialchars($apt['Description']) ?></p>
+              <p class="fw-bold text-dark mb-3">₱<?= number_format($apt['MonthlyRate'], 2) ?></p>
 
               <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'tenant'): ?>
-  <a href="details.php?id=<?= $apt['ApartmentID'] ?>" class="btn btn-success btn-sm mt-auto">Apply Now</a>
-<?php else: ?>
-  <button 
-    class="btn btn-success btn-sm mt-auto login-before-apply" 
-    data-apartment="<?= $apt['ApartmentID'] ?>" 
-    data-bs-toggle="modal" 
-    data-bs-target="#loginModal">
-    Apply Now
-  </button>
-<?php endif; ?>
-
+                <a href="tenant/apartment_details.php?id=<?= $apt['ApartmentID'] ?>" 
+                   class="btn btn-success btn-sm rounded-pill mt-auto">Apply Now</a>
+              <?php else: ?>
+                <button 
+                  class="btn btn-success btn-sm rounded-pill mt-auto login-before-apply" 
+                  data-apartment="<?= $apt['ApartmentID'] ?>" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#loginModal">
+                  Apply Now
+                </button>
+              <?php endif; ?>
             </div>
           </div>
         </div>
       <?php endforeach; ?>
     <?php else: ?>
-      <p class="text-muted">No apartments available right now. Please check back later.</p>
+      <p class="text-muted text-center">No apartments available right now. Please check back later.</p>
     <?php endif; ?>
-  </div>
+  </div> <!-- ✅ Bootstrap grid end -->
 </section>
+
 
 <!-- APARTMENT MODAL -->
 <div class="modal fade" id="apartmentModal" tabindex="-1" aria-hidden="true">

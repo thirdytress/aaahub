@@ -21,7 +21,17 @@ $leases = $db->getTenantLeases($tenant_id);
 <title>Tenant Dashboard | ApartmentHub</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-/* (Insert your existing CSS here) */
+.btn-back {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    transition: 0.3s;
+}
+.btn-back:hover {
+    background-color: #5a6268;
+}
 </style>
 </head>
 <body>
@@ -33,8 +43,6 @@ $leases = $db->getTenantLeases($tenant_id);
         <button class="btn btn-back" onclick="history.back()">&larr; Back</button>
     </div>
 
-    <div id="message-area"></div>
-    
     <div class="row mb-5">
         <?php if ($apartments): ?>
             <?php foreach ($apartments as $a): ?>
@@ -48,11 +56,10 @@ $leases = $db->getTenantLeases($tenant_id);
                             <p><?= htmlspecialchars($a['Location']) ?></p>
                             <p><strong>₱<?= number_format($a['MonthlyRate'], 2) ?>/month</strong></p>
 
-                            <?php if ($_SESSION['role'] === 'tenant'): ?>
-                                <button class="btn btn-primary mt-auto w-100 apply-btn" data-apartment="<?= $a['ApartmentID'] ?>">Apply</button>
-                            <?php else: ?>
-                                <button class="btn btn-primary mt-auto w-100" disabled title="Only tenants can apply">Apply</button>
-                            <?php endif; ?>
+                            <a href="../tenant/apartment_details.php?id=<?= urlencode($a['ApartmentID']) ?>" 
+                               class="btn btn-primary mt-auto w-100">
+                               View Details / Apply
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -97,30 +104,5 @@ $leases = $db->getTenantLeases($tenant_id);
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-// AJAX Apply
-$(document).ready(function(){
-    $('.apply-btn').click(function(){
-        var btn = $(this);
-        var apartmentID = btn.data('apartment');
-
-        $.ajax({
-            url: 'apply_ajax.php',
-            method: 'POST',
-            data: { apartment_id: apartmentID },
-            success: function(response){
-                $('#message-area').html('<div class="alert alert-info">'+response+'</div>');
-                // Optionally, disable button after apply
-                btn.prop('disabled', true).text('Applied');
-            },
-            error: function(){
-                $('#message-area').html('<div class="alert alert-danger">Something went wrong. Try again.</div>');
-            }
-        });
-    });
-});
-</script>
-
 </body>
 </html>
