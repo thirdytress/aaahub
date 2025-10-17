@@ -177,43 +177,181 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!-- APARTMENTS -->
 <section class="container mt-5">
   <h2 class="mb-4 text-primary fw-bold">Available Apartments</h2>
+  <div id="message-area"></div>
   <div class="apartment-grid">
+
     <?php if ($apartments): ?>
       <?php foreach ($apartments as $apt): ?>
-        <?php
-          // Fetch main image from ApartmentPictures
-          $imgStmt = $conn->prepare("SELECT PicPath FROM ApartmentPictures WHERE ApartmentID = :id AND Status = 'active' ORDER BY DateAdded ASC LIMIT 1");
-          $imgStmt->bindParam(':id', $apt['ApartmentID']);
-          $imgStmt->execute();
-          $image = $imgStmt->fetchColumn() ?: 'uploads/default.jpg';
-        ?>
-        <div class="card apartment-card clickable-card"
-             data-bs-toggle="modal"
-             data-bs-target="#apartmentModal"
-             data-name="<?= htmlspecialchars($apt['Name']) ?>"
-             data-description="<?= htmlspecialchars($apt['Description']) ?>"
-             data-rate="<?= number_format($apt['MonthlyRate'],2) ?>"
-             data-image="<?= htmlspecialchars($image) ?>">
+        <div class="col-md-4 mb-4">
+          <div class="card apartment-card clickable-card"
+               data-bs-toggle="modal"
+               data-bs-target="#apartmentModal"
+               data-name="<?= htmlspecialchars($apt['Name']) ?>"
+               data-description="<?= htmlspecialchars($apt['Description']) ?>"
+               data-rate="<?= number_format($apt['MonthlyRate'],2) ?>"
+               data-image="<?= htmlspecialchars($apt['Image'] ?: 'images/airbnb1.jpg') ?>">
 
-          <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($apt['Name']) ?>">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><?= htmlspecialchars($apt['Name']) ?></h5>
-            <p class="card-text"><?= htmlspecialchars($apt['Description']) ?></p>
-            <p class="card-text"><strong>Monthly Rate:</strong> ₱<?= number_format($apt['MonthlyRate'], 2) ?></p>
+            <img src="<?= htmlspecialchars($apt['Image'] ?: 'images/airbnb1.jpg') ?>" alt="<?= htmlspecialchars($apt['Name']) ?>">
 
-            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'tenant'): ?>
-              <button class="btn btn-success btn-sm mt-auto apply-btn" data-apartment="<?= $apt['ApartmentID'] ?>">Apply Now</button>
-            <?php else: ?>
-              <button class="btn btn-success btn-sm mt-auto" data-bs-toggle="modal" data-bs-target="#loginModal">Apply Now</button>
-            <?php endif; ?>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><?= htmlspecialchars($apt['Name']) ?></h5>
+              <p class="card-text"><?= htmlspecialchars($apt['Description']) ?></p>
+              <p class="card-text"><strong>Monthly Rate:</strong> ₱<?= number_format($apt['MonthlyRate'], 2) ?></p>
+
+              <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'tenant'): ?>
+  <a href="details.php?id=<?= $apt['ApartmentID'] ?>" class="btn btn-success btn-sm mt-auto">Apply Now</a>
+<?php else: ?>
+  <button 
+    class="btn btn-success btn-sm mt-auto login-before-apply" 
+    data-apartment="<?= $apt['ApartmentID'] ?>" 
+    data-bs-toggle="modal" 
+    data-bs-target="#loginModal">
+    Apply Now
+  </button>
+<?php endif; ?>
+
+            </div>
           </div>
         </div>
       <?php endforeach; ?>
     <?php else: ?>
-      <p class="text-muted text-center">No apartments available right now. Please check back later.</p>
+      <p class="text-muted">No apartments available right now. Please check back later.</p>
     <?php endif; ?>
   </div>
 </section>
+
+<!-- APARTMENT MODAL -->
+<div class="modal fade" id="apartmentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="apartmentModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <img id="apartmentModalImage" src="" class="img-fluid w-100" alt="Apartment Image">
+        <div class="p-4">
+          <p id="apartmentModalDescription"></p>
+          <p><strong>Monthly Rate:</strong> ₱<span id="apartmentModalRate"></span></p>
+          <button class="btn btn-success w-100" id="modalApplyBtn">Apply Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Login</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm">
+          <div class="mb-3">
+            <label>Username or Email</label>
+            <input type="text" class="form-control" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label>Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" name="password" id="loginPassword" required>
+              <button class="btn btn-outline-secondary" type="button" id="toggleLoginPassword">
+                <i class="bi bi-eye" id="loginEyeIcon"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Forgot Password Link -->
+          <div class="mb-3 text-end">
+            <a href="forgot_password.php" style="font-size: 14px; text-decoration: none; color: #3498db;">Forgot Password?</a>
+          </div>
+          
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL + OTP -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content position-relative">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Tenant Registration</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="registerForm">
+          <input type="hidden" name="action" value="register">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label>First Name</label>
+              <input type="text" class="form-control" name="firstname" required>
+            </div>
+            <div class="col-md-6">
+              <label>Last Name</label>
+              <input type="text" class="form-control" name="lastname" required>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label>Username</label>
+            <input type="text" class="form-control" name="username" required>
+          </div>
+
+          <div class="mt-3">
+            <label>Email Address</label>
+            <input type="email" class="form-control" name="email" required>
+          </div>
+
+          <div class="mt-3">
+            <label>Phone Number</label>
+            <input type="text" class="form-control" name="phone" required>
+          </div>
+
+          <div class="row g-2 mt-3">
+            <div class="col-md-6">
+              <label>Password</label>
+              <div class="input-group">
+                <input type="password" class="form-control" name="password" id="registerPassword" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggleRegisterPassword">
+                  <i class="bi bi-eye" id="registerEyeIcon"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label>Confirm Password</label>
+              <div class="input-group">
+                <input type="password" class="form-control" name="confirm_password" id="confirmPassword" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                  <i class="bi bi-eye" id="confirmEyeIcon"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 mt-3">Register</button>
+        </form>
+
+        <!-- OTP OVERLAY -->
+        <div id="otpOverlay" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.6);">
+          <div class="d-flex justify-content-center align-items-center h-100">
+            <form id="otpForm" class="bg-white p-4 rounded shadow">
+              <h5 class="mb-3 text-center">Enter OTP</h5>
+              <input type="text" class="form-control mb-3" name="otp" placeholder="Enter OTP" required>
+              <input type="hidden" name="action" value="verify_otp">
+              <button type="submit" class="btn btn-success w-100">Verify OTP</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <footer>
   <p class="mb-0">&copy; 2025 ApartmentHub. All rights reserved.</p>
@@ -223,7 +361,128 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  // Show apartment modal with info
+// Check if URL has #loginModal hash
+if (window.location.hash === '#loginModal') {
+    $('#loginModal').modal('show');
+}
+
+// Login Form with SweetAlert
+$('#loginForm').on('submit', function(e) {
+  e.preventDefault();
+  
+  // Show loading
+  Swal.fire({
+    title: 'Logging in...',
+    text: 'Please wait',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  $.ajax({
+    url: 'actions/login.php',
+    type: 'POST',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(response) {
+      if (response.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Login Successful!',
+          text: 'Welcome back, ' + response.name + '!',
+          timer: 2000,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = response.redirect;
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: response.message,
+          confirmButtonColor: '#3498db'
+        });
+      }
+    },
+    error: function() {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred. Please try again.',
+        confirmButtonColor: '#3498db'
+      });
+    }
+  });
+});
+
+// Toggle password visibility in login modal
+$('#toggleLoginPassword').on('click', function() {
+  const passwordField = $('#loginPassword');
+  const eyeIcon = $('#loginEyeIcon');
+  
+  if (passwordField.attr('type') === 'password') {
+    passwordField.attr('type', 'text');
+    eyeIcon.removeClass('bi-eye').addClass('bi-eye-slash');
+  } else {
+    passwordField.attr('type', 'password');
+    eyeIcon.removeClass('bi-eye-slash').addClass('bi-eye');
+  }
+});
+
+// Toggle password visibility in register modal
+$('#toggleRegisterPassword').on('click', function() {
+  const passwordField = $('#registerPassword');
+  const eyeIcon = $('#registerEyeIcon');
+  
+  if (passwordField.attr('type') === 'password') {
+    passwordField.attr('type', 'text');
+    eyeIcon.removeClass('bi-eye').addClass('bi-eye-slash');
+  } else {
+    passwordField.attr('type', 'password');
+    eyeIcon.removeClass('bi-eye-slash').addClass('bi-eye');
+  }
+});
+
+// Toggle confirm password visibility in register modal
+$('#toggleConfirmPassword').on('click', function() {
+  const passwordField = $('#confirmPassword');
+  const eyeIcon = $('#confirmEyeIcon');
+  
+  if (passwordField.attr('type') === 'password') {
+    passwordField.attr('type', 'text');
+    eyeIcon.removeClass('bi-eye').addClass('bi-eye-slash');
+  } else {
+    passwordField.attr('type', 'password');
+    eyeIcon.removeClass('bi-eye-slash').addClass('bi-eye');
+  }
+});
+
+$(function() {
+  $('#registerForm').on('submit', function(e) {
+    e.preventDefault();
+    $.post('actions/register.php', $(this).serialize(), function(response) {
+      if (response.trim() === 'OTP_SENT') {
+        $('#otpOverlay').fadeIn();
+      } else {
+        Swal.fire('Error', response, 'error');
+      }
+    });
+  });
+
+  $('#otpForm').on('submit', function(e) {
+    e.preventDefault();
+    $.post('actions/register.php', $(this).serialize(), function(response) {
+      if (response.trim() === 'OTP_VALID') {
+        $('#otpOverlay').fadeOut();
+        Swal.fire({ icon:'success', title:'Registration complete!', timer:1500, showConfirmButton:false })
+        .then(() => window.location.href = 'index.php');
+      } else {
+        Swal.fire('Invalid OTP', 'Please try again.', 'error');
+      }
+    });
+  });
+
   const apartmentModal = document.getElementById('apartmentModal');
   apartmentModal.addEventListener('show.bs.modal', event => {
     const card = event.relatedTarget;
@@ -232,6 +491,39 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $('#apartmentModalRate').text(card.dataset.rate);
     $('#apartmentModalImage').attr('src', card.dataset.image);
   });
+});
 </script>
+<script>
+let redirectAfterLogin = null;
+
+// kapag pinindot ang "Apply Now" habang hindi pa naka-login
+$(document).on('click', '.login-before-apply', function() {
+  redirectAfterLogin = $(this).data('apartment'); // store apartment ID
+});
+
+// kapag nagsumite ng login form
+$('form[action="login.php"]').on('submit', function(e) {
+  e.preventDefault(); // stop default submission
+  const form = $(this);
+
+  $.post('login.php', form.serialize(), function(response) {
+    try {
+      const res = JSON.parse(response);
+      if (res.success) {
+        if (redirectAfterLogin) {
+          window.location.href = "details.php?id=" + redirectAfterLogin;
+        } else {
+          window.location.reload();
+        }
+      } else {
+        Swal.fire('Login Failed', res.message, 'error');
+      }
+    } catch (err) {
+      Swal.fire('Error', 'Unexpected server response', 'error');
+    }
+  });
+});
+</script>
+
 </body>
 </html>
