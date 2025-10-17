@@ -305,36 +305,74 @@ footer {
 
 <div class="container mt-5">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary mb-0">Available Apartments</h2>
-        <button class="btn btn-back" onclick="history.back()">&larr; Back</button>
-    </div>
+    <section class="container mt-5">
+    <h2 class="mb-4 text-primary fw-bold text-center">Available Apartments</h2>
+    <button class="btn btn-back" onclick="history.back()">&larr; Back</button>
+    
+    <div id="message-area"></div>
 
-    <div class="row mb-5">
-        <?php if ($apartments): ?>
+    <div class="row g-4 justify-content-center">
+        <?php if (!empty($apartments)): ?>
             <?php foreach ($apartments as $a): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <?php if (!empty($a['Image'])): ?>
-                            <img src="../<?= htmlspecialchars($a['Image']) ?>" class="card-img-top" style="height:200px;object-fit:cover;">
-                        <?php endif; ?>
-                        <div class="card-body d-flex flex-column">
-                            <h5><?= htmlspecialchars($a['Name']) ?></h5>
-                            <p><?= htmlspecialchars($a['Location']) ?></p>
-                            <p><strong>₱<?= number_format($a['MonthlyRate'], 2) ?>/month</strong></p>
+                <?php 
+                // 1. DETERMINE THE FULL IMAGE PATH (similar to your index.php logic)
+                // Assuming $a['Image'] contains the path/filename starting from 'apartments/' 
+                // e.g., 'apartments/apt004.jpg'
+                
+                $image_db_path = $a['Image'] ?? '';
+                
+                // Set the path the browser will use in the <img> src
+                // Since this file is likely in a subfolder (e.g., 'tenant/'), 
+                // we need '../' to go up to the root level where 'upload' is.
+                $image_src_path = !empty($image_db_path) 
+                                ? '../upload/' . htmlspecialchars($image_db_path) 
+                                : '../images/airbnb1.jpg';
+                
+                // 2. CHECK IF THE FILE ACTUALLY EXISTS (For PHP side error handling/fallback)
+                // This check uses the file system path, which might be slightly different 
+                // from the browser path, but for simplicity, we'll use the 'upload/' prefix 
+                // if the script is running from the root, OR use a more robust check 
+                // if you know the script's actual file system location.
+                
+                // For safety and clean code, we stick to the browser's path logic above 
+                // and rely on the database for the image value.
+                ?>
+                
+                <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                    <div class="card apartment-card shadow-sm border-0 rounded-4 h-100"
+                        style="width: 100%; max-width: 330px;">
+                        
+                        <img src="<?= $image_src_path ?>"
+                             alt="Image of <?= htmlspecialchars($a['Name'] ?? 'Apartment') ?>"
+                             class="card-img-top rounded-top-4"
+                             style="height: 220px; object-fit: cover;">
 
-                            <a href="../tenant/apartment_details.php?id=<?= urlencode($a['ApartmentID']) ?>" 
-                               class="btn btn-primary mt-auto w-100">
-                               View Details / Apply
+                        <div class="card-body text-center d-flex flex-column">
+                            <h5 class="fw-bold"><?= htmlspecialchars($a['Name'] ?? 'N/A') ?></h5>
+                            
+                            <?php if (isset($a['Location'])): ?>
+                                <p class="text-muted mb-2"><?= htmlspecialchars($a['Location']) ?></p>
+                            <?php endif; ?>
+
+                            <p class="fw-bold text-dark mb-3">
+                                ₱<?= number_format($a['MonthlyRate'] ?? 0, 2) ?>/month
+                            </p>
+
+                            <a href="../tenant/apartment_details.php?id=<?= urlencode($a['ApartmentID'] ?? '') ?>" 
+                                class="btn btn-primary mt-auto w-100">
+                                View Details / Apply
                             </a>
                         </div>
                     </div>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <p class="text-muted">No available apartments at the moment.</p>
+            <div class="col-12">
+                <p class="text-muted text-center">No available apartments at the moment. Please check back later.</p>
+            </div>
         <?php endif; ?>
     </div>
+</section>
 
     <h2 class="text-primary mb-4">My Current Leases</h2>
     <?php if ($leases): ?>
