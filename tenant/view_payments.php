@@ -353,8 +353,29 @@ $payments = $db->getTenantPayments($tenant_id);
   <?php endif; ?>
 </div>
 
+<!-- Add this just above the <footer> -->
+<div class="container mt-4 text-center">
+  <div class="card shadow p-4 mx-auto" style="max-width: 600px;">
+    <h3 class="text-primary mb-3"><i class="bi bi-envelope-paper"></i> Contact Us</h3>
+    <p class="mb-1">
+      <strong>Phone:</strong> 
+      <a href="tel:+639123456789" class="text-decoration-none">+63 912 345 6789</a>
+    </p>
+    <p class="mb-0">
+      <strong>Email:</strong> 
+      <a href="mailto:support@apartmenthub.com" class="text-decoration-none">support@apartmenthub.com</a>
+    </p>
+  </div>
+</div>
+
 <footer>
-  <p class="mb-0">&copy; 2025 ApartmentHub. All rights reserved.</p>
+  <p class="mb-1">&copy; 2025 ApartmentHub. All rights reserved.</p>
+  <p class="mb-0">
+    <strong>Contact:</strong> 
+    <a href="tel:+639123456789" class="text-decoration-none text-white">0993962687</a> | 
+    <strong>Email:</strong> 
+    <a href="mailto:support@apartmenthub.com" class="text-decoration-none text-white">martynjosephseloterio@gmail.com</a>
+  </p>
 </footer>
 
 </body>

@@ -40,64 +40,199 @@ $utilities = $conn->query("SELECT u.*, CONCAT(t.firstname, ' ', t.lastname) AS t
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Manage Utilities | ApartmentHub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Utilities | ApartmentHub</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary-dark: #1a252f;
+  --primary-blue: #3498db;
+  --accent-gold: #d4af37;
+  --luxury-gold: #c9a961;
+  --earth-brown: #8b7355;
+  --soft-white: #f8f5f0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 50%, #f5f1e8 100%);
+  margin: 0;
+}
+
+/* Card Styles */
+.card {
+  border-radius: 25px;
+  background: linear-gradient(145deg, var(--soft-white) 0%, #f0ece5 100%);
+  border: 2px solid rgba(212,175,55,0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: transform 0.3s, box-shadow 0.3s, border-top 0.3s;
+  border-top: 6px solid transparent;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary-dark), var(--primary-blue), var(--accent-gold));
+  border-radius: 25px 25px 0 0;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 90px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.5);
+  border-top: 6px solid var(--luxury-gold);
+}
+
+/* Header with Back Button on Far Right */
+.header-row {
+  display: flex;
+  justify-content: space-between; /* Title left, back button right */
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  color: var(--primary-dark);
+  border-bottom: 2px solid var(--accent-gold);
+  display: inline-block;
+  padding-bottom: 5px;
+  font-weight: 700;
+}
+
+.btn-back {
+  border: 2px solid var(--accent-gold);
+  color: var(--primary-dark);
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 6px 18px;
+  background: linear-gradient(45deg, rgba(212,175,55,0.1), transparent);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.btn-back:hover {
+  background: linear-gradient(45deg, var(--accent-gold), rgba(212,175,55,0.3));
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* Table Styling */
+.table-responsive {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+.table thead {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+}
+.table thead th {
+  color: var(--earth-brown);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem;
+  border: none;
+  font-size: 0.85rem;
+}
+.table tbody td {
+  padding: 0.9rem;
+  color: var(--earth-brown);
+  font-weight: 500;
+  vertical-align: middle;
+  transition: all 0.3s ease;
+}
+.table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(212,175,55,0.05), transparent);
+  transform: translateX(5px);
+}
+.badge-success {
+  background: linear-gradient(45deg, #28a745, var(--accent-gold));
+  color: white;
+  font-weight: 600;
+}
+.badge-warning {
+  background: linear-gradient(45deg, #ffc107, var(--accent-gold));
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+/* Always keep Back button on far right */
+@media (max-width: 576px) {
+  .header-row h2 {
+    font-size: 1.5rem;
+  }
+}
+</style>
 </head>
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
-  <h2 class="text-primary mb-4">Manage Utilities</h2>
-
-  <!-- Add Form -->
-  <div class="card mb-4">
-    <div class="card-header bg-primary text-white">Add Utility Record</div>
-    <div class="card-body">
-      <form method="POST">
-        <div class="row g-3">
-          <div class="col-md-3">
-            <label class="form-label">Tenant</label>
-            <select name="tenant_id" class="form-select" required>
-              <option value="">Select Tenant</option>
-              <?php foreach ($tenants as $t): ?>
-                <option value="<?= $t['tenant_id'] ?>"><?= htmlspecialchars($t['fullname']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Month-Year</label>
-            <input type="text" name="month_year" class="form-control" placeholder="e.g. October 2025" required>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Electricity (kWh)</label>
-            <input type="number" step="0.01" name="electricity_usage" class="form-control" required>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Water (m³)</label>
-            <input type="number" step="0.01" name="water_usage" class="form-control" required>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Electricity Bill</label>
-            <input type="number" step="0.01" name="electricity_bill" class="form-control" required>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Water Bill</label>
-            <input type="number" step="0.01" name="water_bill" class="form-control" required>
-          </div>
-        </div>
-        <div class="mt-3 text-end">
-          <button type="submit" class="btn btn-success">Add Record</button>
-        </div>
-      </form>
-    </div>
+<div class="container">
+  <!-- Header with Back Button on Far Right -->
+  <div class="card header-row">
+    <h2 class="mb-0">Manage Utilities</h2>
+    <a href="dashboard.php" class="btn btn-outline-secondary btn-back">
+      <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
   </div>
 
-  <!-- Utilities Table -->
+  <!-- Add Form Card -->
   <div class="card">
-    <div class="card-header bg-secondary text-white">All Utility Records</div>
-    <div class="card-body table-responsive">
-      <table class="table table-bordered align-middle text-center">
-        <thead class="table-light">
+    <div class="header-row">
+      <h5 class="mb-0">Add Utility Record</h5>
+    </div>
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Tenant</label>
+          <select name="tenant_id" class="form-select" required>
+            <option value="">Select Tenant</option>
+            <?php foreach ($tenants as $t): ?>
+              <option value="<?= $t['tenant_id'] ?>"><?= htmlspecialchars($t['fullname']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Month-Year</label>
+          <input type="text" name="month_year" class="form-control" placeholder="e.g. October 2025" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Electricity (kWh)</label>
+          <input type="number" step="0.01" name="electricity_usage" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Water (m³)</label>
+          <input type="number" step="0.01" name="water_usage" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Electricity Bill</label>
+          <input type="number" step="0.01" name="electricity_bill" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Water Bill</label>
+          <input type="number" step="0.01" name="water_bill" class="form-control" required>
+        </div>
+      </div>
+      <div class="mt-3 text-end">
+        <button type="submit" class="btn btn-success">Add Record</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Utilities Table Card -->
+  <div class="card">
+    <div class="header-row">
+      <h5 class="mb-0">All Utility Records</h5>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle text-center">
+        <thead>
           <tr>
             <th>Tenant</th>
             <th>Month</th>
@@ -120,7 +255,7 @@ $utilities = $conn->query("SELECT u.*, CONCAT(t.firstname, ' ', t.lastname) AS t
             <td>₱<?= number_format($u['water_bill'], 2) ?></td>
             <td><strong>₱<?= number_format($u['total_bill'], 2) ?></strong></td>
             <td>
-              <span class="badge bg-<?= $u['status'] == 'Paid' ? 'success' : 'warning' ?>">
+              <span class="badge <?= $u['status'] == 'Paid' ? 'badge-success' : 'badge-warning' ?>">
                 <?= $u['status'] ?>
               </span>
             </td>
@@ -132,5 +267,7 @@ $utilities = $conn->query("SELECT u.*, CONCAT(t.firstname, ' ', t.lastname) AS t
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

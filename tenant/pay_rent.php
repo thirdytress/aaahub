@@ -349,9 +349,14 @@ $payments = $db->getTenantPayments($tenant_id);
 </div>
 
 <footer>
-  <p class="mb-0">&copy; 2025 ApartmentHub. All rights reserved.</p>
+  <p class="mb-1">&copy; 2025 ApartmentHub. All rights reserved.</p>
+  <p class="mb-0">
+    <strong>Contact:</strong> 
+    <a href="tel:+639123456789" class="text-decoration-none text-white">0993962687</a> | 
+    <strong>Email:</strong> 
+    <a href="mailto:support@apartmenthub.com" class="text-decoration-none text-white">martynjosephseloterio@gmail.com</a>
+  </p>
 </footer>
-
 </body>
 </html>
 

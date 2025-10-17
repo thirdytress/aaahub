@@ -152,6 +152,7 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg sticky-top">
   <div class="container">
+    <div class="icon-container text-primary"><i class="bi bi-buildings"></i></div>
     <a class="navbar-brand" href="#">ApartmentHub</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
