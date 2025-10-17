@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once "classes/database.php";
+
+
 $db = new Database();
 $conn = $db->connect();
 
@@ -179,9 +181,13 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <h2 class="mb-4 text-primary fw-bold text-center">Available Apartments</h2>
   <div id="message-area"></div>
 
-  <div class="row g-4 justify-content-center"> <!-- ✅ Bootstrap grid start -->
+  <div class="row g-4 justify-content-center">
     <?php if ($apartments): ?>
       <?php foreach ($apartments as $apt): ?>
+        <?php 
+          // Updated image logic
+          $imagePath = !empty($apt['Image']) && file_exists('upload/' . $apt['Image']) ? 'upload/' . $apt['Image'] : 'images/airbnb1.jpg';
+        ?>
         <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
           <div class="card apartment-card clickable-card shadow-sm border-0 rounded-4"
                style="width: 100%; max-width: 330px;"
@@ -190,9 +196,9 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                data-name="<?= htmlspecialchars($apt['Name']) ?>"
                data-description="<?= htmlspecialchars($apt['Description']) ?>"
                data-rate="<?= number_format($apt['MonthlyRate'], 2) ?>"
-               data-image="<?= htmlspecialchars($apt['Image'] ?: 'images/airbnb1.jpg') ?>">
+               data-image="<?= htmlspecialchars($imagePath) ?>">
 
-            <img src="<?= htmlspecialchars($apt['Image'] ?: 'images/airbnb1.jpg') ?>"
+            <img src="<?= htmlspecialchars($imagePath) ?>"
                  alt="<?= htmlspecialchars($apt['Name']) ?>"
                  class="card-img-top rounded-top-4"
                  style="height: 220px; object-fit: cover;">
@@ -221,7 +227,7 @@ $apartments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php else: ?>
       <p class="text-muted text-center">No apartments available right now. Please check back later.</p>
     <?php endif; ?>
-  </div> <!-- ✅ Bootstrap grid end -->
+  </div>
 </section>
 
 

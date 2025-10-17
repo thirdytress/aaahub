@@ -41,11 +41,14 @@ $leases = $db->getTenantLeases($tenant_id);
     }
 
     body {
-      background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 50%, #f5f1e8 100%);
-      font-family: 'Poppins', sans-serif;
+      display: flex;             /* Added for footer at bottom */
+      flex-direction: column;    /* Stack content vertically */
       min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 50%, #f5f1e8 100%);
       position: relative;
       overflow-x: hidden;
+      margin: 0;
     }
 
     body::before {
@@ -112,23 +115,8 @@ $leases = $db->getTenantLeases($tenant_id);
       transform: translateY(-2px);
     }
 
-    .navbar .btn-outline-danger {
-      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-      border: 2px solid rgba(255,255,255,0.2);
-      color: white;
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-    }
-
-    .navbar .btn-outline-danger:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
-    }
-
     .container {
+      flex: 1;                  /* Added to push footer down */
       position: relative;
       z-index: 1;
       margin-top: 50px;
@@ -144,6 +132,7 @@ $leases = $db->getTenantLeases($tenant_id);
       border: 2px solid rgba(212, 175, 55, 0.3);
       position: relative;
       animation: fadeInUp 0.8s ease;
+      padding: 2rem;
     }
 
     @keyframes fadeInUp {
@@ -199,15 +188,14 @@ $leases = $db->getTenantLeases($tenant_id);
     }
 
     .table thead th {
-    color: var(--earth-brown); /* instead of white */
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 1.2rem 1rem;
-    border: none;
-    font-size: 0.9rem;
-}
-
+      color: var(--earth-brown);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1.2rem 1rem;
+      border: none;
+      font-size: 0.9rem;
+    }
 
     .table tbody tr {
       transition: all 0.3s ease;
@@ -224,11 +212,6 @@ $leases = $db->getTenantLeases($tenant_id);
       color: var(--earth-brown);
       font-weight: 500;
       vertical-align: middle;
-    }
-
-    .lease-period {
-      font-size: 0.9rem;
-      color: var(--earth-brown);
     }
 
     .text-muted {
@@ -270,21 +253,24 @@ $leases = $db->getTenantLeases($tenant_id);
       50% { transform: translateY(-30px); }
     }
 
-    @media (max-width: 768px) {
-      .card {
-        padding: 2rem !important;
-      }
-
-      .card h3 {
-        font-size: 1.5rem;
-      }
-
-      .table thead th,
-      .table tbody td {
-        padding: 1rem 0.5rem;
-        font-size: 0.85rem;
-      }
+    footer {
+      background: linear-gradient(135deg, var(--deep-navy) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 20px 20px;
+      text-align: center;
+      margin-top: auto;  /* sticks footer at bottom */
+      border-top: 3px solid var(--accent-gold);
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1;
     }
+
+    footer p {
+      margin-bottom: 0;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
   </style>
 </head>
 <body>
@@ -292,18 +278,17 @@ $leases = $db->getTenantLeases($tenant_id);
 <div class="floating-decoration deco-1"></div>
 <div class="floating-decoration deco-2"></div>
 
-<nav class="navbar navbar-expand-lg bg-white mb-4">
+<nav class="navbar navbar-expand-lg mb-4">
   <div class="container">
     <a class="navbar-brand fw-bold text-primary" href="#">ApartmentHub Tenant</a>
     <div class="d-flex">
       <a href="dashboard.php" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-arrow-left"></i> Back</a>
-      
     </div>
   </div>
 </nav>
 
 <div class="container">
-  <div class="card p-4">
+  <div class="card">
     <h3 class="text-primary mb-4"><i class="bi bi-house-door me-2"></i>My Leases</h3>
 
     <?php if (count($leases) > 0): ?>
@@ -324,11 +309,10 @@ $leases = $db->getTenantLeases($tenant_id);
               <tr>
                 <td><?= $index + 1 ?></td>
                 <td><?= htmlspecialchars($lease['apartment_name']) ?></td>
-<td><?= htmlspecialchars($lease['Location']) ?></td>
-<td>₱<?= number_format($lease['MonthlyRate'], 2) ?></td>
-<td><?= date('M d, Y', strtotime($lease['start_date'])) ?></td>
-<td><?= date('M d, Y', strtotime($lease['end_date'])) ?></td>
-
+                <td><?= htmlspecialchars($lease['Location']) ?></td>
+                <td>₱<?= number_format($lease['MonthlyRate'], 2) ?></td>
+                <td><?= date('M d, Y', strtotime($lease['start_date'])) ?></td>
+                <td><?= date('M d, Y', strtotime($lease['end_date'])) ?></td>
               </tr>
             <?php endforeach; ?>
           </tbody>
@@ -339,6 +323,10 @@ $leases = $db->getTenantLeases($tenant_id);
     <?php endif; ?>
   </div>
 </div>
+
+<footer>
+  <p>&copy; 2025 ApartmentHub. All rights reserved.</p>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

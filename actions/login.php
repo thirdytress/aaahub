@@ -31,7 +31,7 @@ if ($username === 'admin1' && $password === 'admin123') {
   echo json_encode([
     'success' => true,
     'name' => 'Admin',
-    'redirect' => '../admin/dashboard.php'
+    'redirect' => '../ahub/admin/dashboard.php'
   ]);
   exit;
 }
@@ -53,7 +53,7 @@ if ($tenant && password_verify($password, $tenant['password'])) {
   echo json_encode([
     'success' => true,
     'name' => $tenant['firstname'],
-    'redirect' => '../tenant/dashboard.php'
+    'redirect' => '../ahub/tenant/dashboard.php'
   ]);
   exit;
 }
